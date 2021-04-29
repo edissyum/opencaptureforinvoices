@@ -1,0 +1,79 @@
+<div>
+    <mat-accordion class="setting-custom-fields">
+        <mat-expansion-panel [expanded]="true" (opened)="addCustomFieldsOpenState = true"
+                                     (closed)="addCustomFieldsOpenState = false">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    {{ 'SETTINGS.add_custom_fields' | translate }}
+                </mat-panel-title>
+                <mat-panel-description>
+                </mat-panel-description>
+            </mat-expansion-panel-header>
+              <form (ngSubmit)="AddCustomField()" [formGroup]="form">
+                <div [formGroup]="form" class="mx-8 grid grid-cols-6 gap-4">
+                  <mat-form-field appearance="outline" class="w-full" *ngFor="let input of addFieldInputs">
+                    <mat-label [attr.for]="input.key">{{ input.label }}</mat-label>
+                    <div [ngSwitch]="input.controlType">
+                        <input matInput *ngSwitchCase="'textbox'" [formControlName]="input.key"
+                            [id]="input.key" [type]="input.type"/>
+                        <mat-select [id]="input.key" *ngSwitchCase="'dropdown'" [formControlName]="input.key">
+                        <mat-option  *ngFor="let opt of input.options" [value]="opt.key">
+                            {{ opt.value }}
+                        </mat-option>
+                      </mat-select>
+                    </div>
+                  </mat-form-field>
+                </div>
+                <div class="grid h-20 justify-items-center">
+                  <button mat-button class="mx-auto h-12 w-48 bg-gray-100" type="submit" [disabled]="!form.valid">
+                      <i class="fa fa-plus fa-fw" aria-hidden="true"></i>{{ 'GLOBAL.add' | translate }}
+                  </button>
+                </div>
+              </form>
+        </mat-expansion-panel>
+    </mat-accordion>
+    <div class="custom-fields-control w-full">
+        <div cdkDropListGroup class="w-max mx-auto">
+            <div class="list-container">
+              <h2>{{ 'GLOBAL.inactive' | translate }}</h2>
+              <div
+                  cdkDropList
+                  [cdkDropListData]="inactiveFields"
+                  class="custom-fields-list overflow-auto"
+                  (cdkDropListDropped)="drop($event)">
+                <div class="custom-field-box" *ngFor="let item of inactiveFields; let i = index;" cdkDrag>
+                    <div class="text-left">
+                        {{item.label}}
+                        <span class="text-gray-400">
+                            ({{ 'GLOBAL.' + item.type | translate }} |
+                            <i *ngIf="item.module == 'splitter'">{{ 'SPLITTER.splitter' | translate }})</i>
+                            <i *ngIf="item.module == 'verifier'">{{ 'VERIFIER.verifier' | translate}})</i>
+                        </span>
+                    </div>
+                    <button mat-button (click)="moveToActive(i)"><i class="fa fa-plus"></i></button>
+                </div>
+              </div>
+            </div>
+        <div class="list-container">
+            <h2>{{ 'GLOBAL.active' | translate }}</h2>
+            <div
+                cdkDropList
+                [cdkDropListData]="activeFields"
+                class="custom-fields-list overflow-auto"
+                (cdkDropListDropped)="drop($event)">
+            <div class="custom-field-box" *ngFor="let item of activeFields; let i = index;"  cdkDrag>
+                <div class="text-left">
+                    {{item.label}}
+                    <span class="text-gray-400">
+                        ({{ 'GLOBAL.' + item.type | translate }} |
+                        <i *ngIf="item.module == 'splitter'">{{ 'SPLITTER.splitter' | translate }})</i>
+                        <i *ngIf="item.module == 'verifier'">{{ 'VERIFIER.verifier' | translate}})</i>
+                    </span>
+                </div>
+                <button mat-button (click)="moveToInactive(i)"><i class="fa fa-minus"></i></button>
+            </div>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
