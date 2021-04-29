@@ -1,0 +1,25 @@
+<div class="search-input">
+    <mat-form-field class="w-56" appearance="outline">
+      <mat-label>{{ 'SPLITTER.search' | translate }}</mat-label>
+      <input matInput [(ngModel)]="searchText" (input)="filterChanged()">
+    </mat-form-field>
+</div>
+<mat-card class="overflow-auto" style="height: 700px;">
+  <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+    <button mat-button class="h-8" [ngClass]="selectedItemName === node ? 'text-green-400' : ''"
+            (click)="selectNode(node)">
+      <i class="fas fa-file fw"></i>
+      <span class="pl-1 font-normal">{{node.item}}</span>
+    </button>
+    </mat-tree-node>
+    <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding>
+      <button mat-button matTreeNodeToggle
+              [attr.aria-label]="'Toggle ' + node.item">
+        <i [ngClass]="treeControl.isExpanded(node) ? 'fa fa-minus-square' : 'fa fa-plus-square'">
+        </i>
+        <span class="pl-1 font-normal">{{node.item}}</span>
+      </button>
+    </mat-tree-node>
+  </mat-tree>
+</mat-card>
