@@ -15,7 +15,15 @@
 
 # @dev : Nathan Cheval <nathan.cheval@outlook.fr>
 # @dev : Oussama Brich <oussama.brich@edissyum.com>
-
+def retrieve_batches(args):
+    db = get_db()
+    error = None
+    batches = db.select({
+        'select': ['*'] if 'select' not in args else args['select'],
+        'table': ['splitter_batches'],
+        'where': ['status <> %s'],
+        'data': ['DEL']
+    })
 from ..controllers.db import get_db
 
 
@@ -25,7 +33,7 @@ def retrieve_batches(args):
     batches = db.select({
         'select': ['*'] if 'select' not in args else args['select'],
         'table': ['splitter_batches'],
-        'where': ['status <> ?'],
+        'where': ['status <> %s'],
         'data': ['DEL']
     })
 
@@ -40,7 +48,7 @@ def get_batch_by_id(args):
     batches = db.select({
         'select': ['*'] if 'select' not in args else args['select'],
         'table': ['splitter_batches'],
-        'where': ['id = ?'],
+        'where': ['id = %s'],
         'data': [args['id']]
     })[0]
 
@@ -56,7 +64,7 @@ def get_batch_pages(args):
     pages = db.select({
         'select': ['*'] if 'select' not in args else args['select'],
         'table': ['splitter_pages'],
-        'where': ['batch_id = ?'],
+        'where': ['batch_id = %s'],
         'data': [args['id']]
     })
 
@@ -73,7 +81,7 @@ def change_status(args):
         'set': {
             'status': args['status']
         },
-        'where': ['id = ?'],
+        'where': ['id = %s'],
         'data': [args['id']]
     }
     res = db.update(args)

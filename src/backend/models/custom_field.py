@@ -48,7 +48,7 @@ def retrieve_custom_fields(args):
         'select': ['*'] if 'select' not in args else args['select'],
         'table': ['custom_fields'],
     })
-    print(custom_fields)
+
     if not custom_fields:
         error = gettext('ERROR')
 
@@ -68,7 +68,7 @@ def update(args):
             'enabled': args['enabled'],
             'label_short': args['label_short'],
         },
-        'where': ['id = ?'],
+        'where': ['id = %s'],
         'data': [args['id']]
     })
 
