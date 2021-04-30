@@ -1,1 +1,152 @@
-<p>viewer works!</p>
+<mat-drawer-container class="viewer-container" hasBackdrop="false">
+  <mat-drawer #drawer mode="side" opened>
+    <div fxLayout="row wrap" fxLayoutGap="16px grid">
+    <div class="card" [fxFlex]="100 + '%'" fxFlex.xs="100%" fxFlex.sm="33%" *ngFor="let batch of batches| slice: 0 : 10">
+<!--      <mat-card class="mat-elevation-z4">-->
+<!--        <a class="image-link"  (click)="changeBatch(batch['id'])">-->
+<!--          <mat-card-header>-->
+<!--             <img class="page-image" mat-card-image [src]="sanitize(batch['image_url'])">-->
+<!--          </mat-card-header>-->
+<!--        </a>-->
+<!--        <mat-card-content>-->
+<!--          <mat-card-title class="card-title text-lg break-words"><a>{{batch['file_name']}}</a></mat-card-title>-->
+<!--          <span title="{{ 'SPLITTER.document_number' | translate }} : {{ batch['page_number'] }}"-->
+<!--                class="file-count absolute right-4 text-green-400">-->
+<!--            {{ batch['page_number'] }} <i class="far fa-file"></i>-->
+<!--          </span>-->
+<!--          <i class="text-gray-500">-->
+<!--            {{ 'SPLITTER.saved_the' | translate }} : {{batch['creation_date'] | date:"dd-MM-yyyy HH:mm"}} <br>-->
+<!--            {{ 'SPLITTER.document_type' | translate }} : {{ 'GLOBAL.none' | translate }}-->
+<!--          </i>-->
+<!--        </mat-card-content>-->
+<!--      </mat-card>-->
+    </div>
+  </div>
+  </mat-drawer>
+  <mat-drawer-content>
+    <button class="btn-show-batches left-0" mat-raised-button (click)="drawer.toggle()">
+      <span>
+        <i *ngIf="drawer.opened" class="fas fa-angle-left"></i>
+        <i *ngIf="!drawer.opened" class="fas fa-angle-right"></i>
+      </span>
+    </button>
+    <img class="zoom-image border-2"
+         *ngIf="showZoomPage" mat-card-image
+         [src]="sanitize(zoomImageUrl)"
+         (clickOutside)="showZoomPage = false"
+         [exclude]="'.btn-page-zoom'"/>
+    <div class="w-10/12 absolute top-0 mx-32">
+        <mat-accordion class="metadata">
+            <mat-expansion-panel class="my-10 bg-gray-20" [expanded]="true" (opened)="metaDataOpenState = true"
+                                 (closed)="metaDataOpenState = false">
+                <mat-expansion-panel-header>
+                  <mat-panel-title class="metadata-title">
+                    {{ 'SPLITTER.meta_data' | translate }}
+                  </mat-panel-title>
+                  <mat-panel-description>
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                  <form [formGroup]="form">
+                    <div [formGroup]="form" class="mx-8 grid grid-cols-4 gap-4">
+                      <mat-form-field appearance="outline" class="w-full" *ngFor="let input of customFields">
+                        <mat-label [attr.for]="input.key">{{input.label }}</mat-label>
+                        <div [ngSwitch]="input.type">
+                            <input matInput *ngSwitchCase="'textbox'" [formControlName]="input.key"
+                                [id]="input.key" [type]="input.type"/>
+                            <mat-select [id]="input.key" *ngSwitchCase="'dropdown'" [formControlName]="input.key">
+                                <mat-option  *ngFor="let opt of input.options" [value]="opt.value">
+                                    {{ opt.value }}
+                                </mat-option>
+                            </mat-select>
+                        </div>
+                      </mat-form-field>
+                    </div>
+                  </form>
+            </mat-expansion-panel>
+        </mat-accordion>
+        <mat-card class="document" *ngFor="let document of documents; let indexOfDocument = index;">
+          <mat-card-title class="metadata-title">
+            <button class="absolute top-8" (click)="openDocumentTypeDialog(document)" title="{{ 'SPLITTER.edit' | translate }}">
+                <i class="fas fa-edit absolute"></i>
+            </button>
+            <span class="ml-8">{{document['documentTypeName'] }}</span>&nbsp;
+            <button mat-button class="absolute right-6" (click)="deleteDocument(indexOfDocument)"
+                    title="{{ 'GLOBAL.delete' | translate }}">
+                <i class="fas fa-trash-alt fa-lg"></i>
+            </button>
+          </mat-card-title>
+          <mat-card-content class="document-content">
+            <div  cdkDropListOrientation="horizontal" class="drop-list"
+                    style='background-image: url("assets/imgs/dots.jpg")'
+                    (cdkDropListDropped)="drop($event)"
+                    cdkDropList [attr.id]="addId(indexOfDocument)" [cdkDropListData]="document['pages']"
+                    [cdkDropListConnectedTo]="documentsIds">
+                <div class="page bg-gray-200 m-1.5 rounded-md" *ngFor="let page of document['pages']"
+                     (click)="page['checkBox'] = !page['checkBox']" cdkDrag>
+                    <div class="custom-placeholder m-1.5" *cdkDragPlaceholder></div>
+                    <div class="page-header">
+                        <button mat-button class="btn-page-zoom max-w-xs float-right text-center bg-gray-100"
+                            title="{{ 'SPLITTER.zoom' | translate }}"
+                            (click)="showZoomPage = true; zoomImageUrl = page['imageUrl']; $event.stopPropagation();">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <mat-checkbox [(ngModel)]="page['checkBox']" (click)="$event.stopPropagation()"
+                                      title="{{ 'SPLITTER.select' | translate }}"
+                                      class="page-check-box float-left mt-4" id="page-check-box-{{page['id']}}">
+                        </mat-checkbox>
+                    </div>
+                    <img class="page-image"  mat-card-image [src]="sanitize(page['imageUrl'])"/>
+                </div>
+            </div>
+            </mat-card-content>
+            </mat-card>
+            <mat-card class="splitter-tools divide-x divide-green-500 border-gray-300">
+                <mat-card-content>
+                    <button mat-button (click)="deleteSelectedPages()" class="btn-icon"
+                        title="{{ 'SPLITTER.delete_selected_pages' | translate }}">
+                        <i class="fas fa-trash-alt fa-lg"></i>
+                    </button>
+                    <button mat-button (click)="setAllPagesTo(true)" class="btn-icon btn-splitter-check"
+                        title="{{ 'SPLITTER.select_all' | translate }}">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </button>
+                    <button mat-button (click)="setAllPagesTo(false)" class="btn-icon border-r-2 border-black"
+                        title="{{ 'SPLITTER.unselect_all' | translate }}">
+                        <i class="fas fa-ban fa-lg"></i>
+                    </button>
+                    <button mat-button (click)="undoAll()" class="btn-icon border-r-10 border-gray-400"
+                        title="{{ 'SPLITTER.reset' | translate }}">
+                        <i class="fas fa-undo fa-lg"></i>
+                    </button>
+                    <button mat-button class="btn-splitter-add-invoice"
+                            (click)="addDocument()"
+                        title="{{ 'SPLITTER.add_document' | translate }}">
+                        <i class="fas fa-plus-circle fa-lg"></i>
+                    </button>
+                    <mat-form-field class="send-select-options" appearance="outline">
+                        <mat-label>{{ 'SPLITTER.send_to' | translate }}</mat-label>
+                        <select [(ngModel)]="toolSelectedOption" matNativeControl>
+                            <option *ngFor="let document of documents;" [value]="document['id']">
+                                {{document['documentTypeName']}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <button (click)="sendSelectedPages()" mat-button class="ml-3"
+                        title="{{ 'SPLITTER.send' | translate }}">
+                        <i class="fa fa-paper-plane fa-lg"></i>
+                    </button>
+                    <button mat-button (click)="validate()" class="btn-validate-splitter absolute right-4 rounded-full bg-green-400 text-white
+                     px-3 py-2 text-sm font-medium transition duration-300" >
+                        {{ 'GLOBAL.validate' | translate }}
+                    </button>
+                    <button mat-button class="btn-validate-splitter absolute right-44 text-gray-500 bg-gray-300 rounded-full
+                     px-3 py-2 text-sm font-medium transition duration-300" routerLink="/splitter/list">
+                        {{ 'GLOBAL.cancel' | translate }}
+                    </button>
+                </mat-card-content>
+            </mat-card>
+            <div class="splitter-tools-place">
+            </div>
+        </div>
+    </mat-drawer-content>
+</mat-drawer-container>
