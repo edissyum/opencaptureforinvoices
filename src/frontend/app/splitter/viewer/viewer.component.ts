@@ -77,9 +77,9 @@ export class SplitterViewerComponent implements OnInit {
           tap((data: any) => {
             for (let i=0; i < data['page_lists'].length; i++) {
                 this.documents[i] = {
-                    id          : "document-" + i,
-                    documentTypeName: "Document " + (i + 1),
-                    pages       : [],
+                    id               : "document-" + i,
+                    documentTypeName : "Document " + (i + 1),
+                    pages            : [],
                 };
                 for (let page of data['page_lists'][i]) {
                     this.documents[i].pages.push({
@@ -102,8 +102,12 @@ export class SplitterViewerComponent implements OnInit {
 
     toFormGroup( ) {
         const group: any = { };
-            this.customFields.forEach((input: { key: string | number; required: any; value: any; }) => {
-              group[input.key] = input.required ? new FormControl(input.value || '', Validators.required)
+            this.customFields.forEach((input: {
+                label_short : string | number;
+                required    : any;
+                value       : any;
+            }) => {
+              group[input.label_short] = input.required ? new FormControl(input.value || '', Validators.required)
                                                 : new FormControl(input.value || '');
             });
         return new FormGroup(group);
@@ -116,19 +120,19 @@ export class SplitterViewerComponent implements OnInit {
         this.http.get(API_URL + '/ws/customFields/list',{headers}).pipe(
         tap((data: any) => {
           data.customFields.forEach((field: {
-              id        : any;
-              key       : any;
-              module    : any;
-              label     : any;
-              type      : any;
-              enabled   : any; }) =>{
+              id            : any;
+              label_short   :  any;
+              module        : any;
+              label         : any;
+              type          : any;
+              enabled       : any; }) =>{
               newField = {
-                'id'      : field.id,
-                'key'     : field.key,
-                'module'  : field.module,
-                'label'   : field.label,
-                'type'    : field.type,
-                'enabled' : field.enabled,
+                'id'            : field.id,
+                'label_short'   : field.label_short,
+                'module'        : field.module,
+                'label'         : field.label,
+                'type'          : field.type,
+                'enabled'       : field.enabled,
               }
               if(field.enabled)
                   this.customFields.push(newField);
