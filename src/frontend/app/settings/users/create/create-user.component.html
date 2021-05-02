@@ -1,0 +1,41 @@
+<mat-sidenav-container class="absolute left-0 right-0 bottom-0" style="top: 4.2rem">
+    <mat-sidenav #sidenav mode="side" opened class="w-1/6 flex flex-col h-full border-r border-green-400" style="top:0.1rem">
+        <h3 class="text-center text-gray-900" style="margin-top: 0.75rem">{{ "SETTINGS.administration" | translate }}</h3>
+        <mat-divider class="border-green-400"></mat-divider>
+        <mat-nav-list>
+            <mat-expansion-panel *ngFor="let parent of this.serviceSettings.getSettingsParent()"
+                                 [expanded]="this.serviceSettings.getSelectedParentSetting() == parent['id']">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        {{ parent['label'] | translate }}
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="w-full border-t-2 border-gray-600">
+                    <div class="border-b border-gray-400 " *ngFor="let setting of this.serviceSettings.getSettings()[parent['id']];">
+                        <button mat-button [class.text-green-400]="this.serviceSettings.getSelectedSetting() === setting['id']"
+                                class="font-normal w-full h-20 flex justify-center items-center text-center"
+                                (click)="this.serviceSettings.changeSetting(setting['id'], parent['id'])"
+                                routerLink="{{ setting['route'] }}">
+                            <i class="absolute left-4 w-10 h-10 rounded-full flex items-center justify-center fa-lg {{setting['icon']}}"> </i>
+                            <p [class.font-medium]="this.serviceSettings.getSelectedSetting() === setting['id']" class="m-0">
+                                {{ setting['label'] | translate }}
+                            </p>
+                        </button>
+                    </div>
+                </div>
+            </mat-expansion-panel>
+        </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content class="bg-white">
+        <div class="settings text-gray-900" style="margin-top: 0.75rem">
+            <button mat-icon-button
+                    (click)="sidenav.toggle(); this.serviceSettings.toggleMenu();" class="absolute left-2 top-2">
+                <i [class.fa-arrow-right]="!this.serviceSettings.getIsMenuOpen()" class="fas fa-arrow-left text-2xl"></i>
+            </button>
+            <div class="settings_title text-center">
+                <h3>{{ this.serviceSettings.getTitle() }}</h3>
+                <hr class="border-green-400">
+            </div>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

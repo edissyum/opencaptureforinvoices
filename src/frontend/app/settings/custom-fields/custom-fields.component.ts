@@ -11,6 +11,7 @@ import {AuthService} from "../../../services/auth.service";
 import {UserService} from "../../../services/user.service";
 import {TranslateService} from "@ngx-translate/core";
 import {NotificationService} from "../../../services/notifications/notifications.service";
+import {SettingsService} from "../../../services/settings.service";
 
 @Component({
   selector: 'app-custom-fields',
@@ -25,7 +26,7 @@ export class CustomFieldsComponent implements OnInit {
   addFieldInputs: any[]             = [
     {
       controlType : 'textbox',
-      label_short : 'key',
+      label_short : 'label_short',
       label       : this.translate.instant('GLOBAL.key'),
       required    : true,
     },
@@ -68,7 +69,7 @@ export class CustomFieldsComponent implements OnInit {
       public userService: UserService,
       private translate: TranslateService,
       private notify: NotificationService,
-      private resolver: ComponentFactoryResolver
+      public serviceSettings: SettingsService,
   ) {
     this.form = this.toFormGroup();
     this.retrieveCustomFields()

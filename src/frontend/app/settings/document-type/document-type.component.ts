@@ -4,6 +4,7 @@ import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
 import {BehaviorSubject} from "rxjs";
 import {SelectionModel} from "@angular/cdk/collections";
 import {TREE_DATA} from "./document-tree"
+import {SettingsService} from "../../../services/settings.service";
 
 export class TreeItemNode {
   key!: string;
@@ -127,7 +128,10 @@ export class DocumentTypeComponent implements OnInit {
   /** The selection for checklist */
   checklistSelection = new SelectionModel<TreeItemFlatNode>(false /* multiple */);
 
-  constructor(private database: ChecklistDatabase) {
+  constructor(
+      private database: ChecklistDatabase,
+      public serviceSettings: SettingsService,
+  ) {
     this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel,
       this.isExpandable, this.getChildren);
     this.treeControl = new FlatTreeControl<TreeItemFlatNode>(this.getLevel, this.isExpandable);
