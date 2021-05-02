@@ -47,7 +47,7 @@
                   </mat-panel-description>
                 </mat-expansion-panel-header>
                   <form [formGroup]="form">
-                    <div [formGroup]="form" class="mx-8 grid grid-cols-4 gap-4">
+                    <div class="mx-8 grid grid-cols-4 gap-4">
                       <mat-form-field appearance="outline" class="w-full" *ngFor="let input of customFields">
                         <mat-label [attr.for]="input.label_short">{{input.label }}</mat-label>
                         <div [ngSwitch]="input.type">

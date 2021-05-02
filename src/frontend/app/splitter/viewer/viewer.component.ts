@@ -1,4 +1,4 @@
-import {Component, ElementRef, HostListener, OnInit, QueryList, ViewChildren} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {API_URL} from "../../env";
 import {catchError, tap} from "rxjs/operators";
 import {of} from "rxjs";
@@ -14,9 +14,6 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {CdkDragDrop, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
 import {DocumentTreeComponent} from "../document-tree/document-tree.component";
 import {MatDialog} from "@angular/material/dialog";
-import {element} from "protractor";
-
-
 
 export interface Batch {
     id              : number,
@@ -26,14 +23,24 @@ export interface Batch {
     creation_date   : string,
 }
 
+export interface CustomField {
+    id              : number;
+    label_short     : string;
+    module          : string;
+    label           : string;
+    type            : string;
+    enabled         : boolean;
+    options?        : []
+}
+
 @Component({
   selector: 'app-viewer',
   templateUrl: './viewer.component.html',
   styleUrls: ['./viewer.component.scss'],
 })
 export class SplitterViewerComponent implements OnInit {
-    form!: FormGroup;
-    metaDataOpenState           = true;
+    form: FormGroup             = new FormGroup({});
+    metaDataOpenState: boolean  = true;
     showZoomPage: boolean       = false;
     batchId : number            = -1;
     batches: Batch[]            = [];
@@ -65,7 +72,6 @@ export class SplitterViewerComponent implements OnInit {
         this.loadBatches();
         this.loadPages();
         this.loadCustomFields();
-        this.form = this.toFormGroup();
     }
 
     loadBatches(): void{
@@ -120,51 +126,48 @@ export class SplitterViewerComponent implements OnInit {
         ).subscribe()
     }
 
-    toFormGroup( ) {
-        const group: any = { };
-            this.customFields.forEach((input: {
-                label_short : string;
-                required    : any;
-                value       : any;
-            }) => {
-              group[input.label_short] = input.required ? new FormControl(input.value || '', Validators.required)
-                                                : new FormControl(input.value || '');
-            });
-        return new FormGroup(group);
-    }
-
     /* -- Custom fields -- */
     loadCustomFields(){
-        let headers   = this.authService.headers;
+        let headers = this.authService.headers;
         let newField;
         this.http.get(API_URL + '/ws/customFields/list',{headers}).pipe(
         tap((data: any) => {
-          data.customFields.forEach((field: {
-              id            : any;
-              label_short   :  any;
-              module        : any;
-              label         : any;
-              type          : any;
-              enabled       : any;
-          }) =>{
-              newField = {
-                'id'            : field.id,
-                'label_short'   : field.label_short,
-                'module'        : field.module,
-                'label'         : field.label,
-                'type'          : field.type,
-                'enabled'       : field.enabled,
-              }
-              if(field.enabled)
-                  this.customFields.push(newField);
-            }
-          )
+            data.customFields.forEach((field: CustomField) =>{
+                newField = {
+                    'id'            : field.id,
+                    'label_short'   : field.label_short,
+                    'module'        : field.module,
+                    'label'         : field.label,
+                    'type'          : field.type,
+                    'enabled'       : field.enabled,
+                    'options'       : field.options,
+                }
+                if(field.enabled)
+                this.customFields.push(newField);
+            })
+            this.form = this.toFormGroup();
         }),
         catchError((err: any) => {
             console.debug(err);
             return of(false);
         })
         ).subscribe()
+    }
+
+    toFormGroup( ) {
+        const group: any = { };
+            this.customFields.forEach((input: {
+                label_short : string;
+                required    : boolean;
+                value       : string;
+                enabled     : boolean;
+            }) => {
+                if(input.enabled)
+                    group[input.label_short] = input.required ?
+                        new FormControl(input.value || '', Validators.required) :
+                        new FormControl(input.value || '');
+            });
+        return new FormGroup(group);
     }
     /* -- End custom fields -- */
 
@@ -267,7 +270,6 @@ export class SplitterViewerComponent implements OnInit {
 
     isElementInViewport(el: any) {
         let rect = el.getBoundingClientRect();
-
         return (
             rect.bottom >= 0 &&
             rect.right >= 0 &&
