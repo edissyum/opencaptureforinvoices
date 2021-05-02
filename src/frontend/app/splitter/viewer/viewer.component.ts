@@ -14,19 +14,29 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {CdkDragDrop, moveItemInArray, transferArrayItem} from "@angular/cdk/drag-drop";
 import {DocumentTreeComponent} from "../document-tree/document-tree.component";
 import {MatDialog} from "@angular/material/dialog";
+import {element} from "protractor";
+
+
+
+export interface Batch {
+    id              : number,
+    image_url       : string,
+    file_name       : string,
+    page_number     : number,
+    creation_date   : string,
+}
 
 @Component({
   selector: 'app-viewer',
   templateUrl: './viewer.component.html',
   styleUrls: ['./viewer.component.scss'],
 })
-
 export class SplitterViewerComponent implements OnInit {
     form!: FormGroup;
     metaDataOpenState           = true;
     showZoomPage: boolean       = false;
     batchId : number            = -1;
-    batches: any                = [];
+    batches: Batch[]            = [];
     customFields: any           = [];
     documents: any              = [];
     documentsHistory: any       = [];
@@ -62,7 +72,17 @@ export class SplitterViewerComponent implements OnInit {
         let headers = this.authService.headers;
         this.http.get(API_URL + '/ws/splitter/batches', {headers}).pipe(
           tap((data: any) => {
-              this.batches = data.batches;
+              data.batches.forEach((batch: Batch) =>
+                this.batches.push(
+                    {
+                        id              : batch.id,
+                        image_url       : batch.image_url,
+                        file_name       : batch.file_name,
+                        page_number     : batch.page_number,
+                        creation_date   : batch.creation_date,
+                    }
+                )
+              )
           }),
           catchError((err: any) => {
               this.notify.error(err);
@@ -103,7 +123,7 @@ export class SplitterViewerComponent implements OnInit {
     toFormGroup( ) {
         const group: any = { };
             this.customFields.forEach((input: {
-                label_short : string | number;
+                label_short : string;
                 required    : any;
                 value       : any;
             }) => {
@@ -125,7 +145,8 @@ export class SplitterViewerComponent implements OnInit {
               module        : any;
               label         : any;
               type          : any;
-              enabled       : any; }) =>{
+              enabled       : any;
+          }) =>{
               newField = {
                 'id'            : field.id,
                 'label_short'   : field.label_short,
@@ -144,10 +165,10 @@ export class SplitterViewerComponent implements OnInit {
             return of(false);
         })
         ).subscribe()
-        console.log(this.customFields);
     }
     /* -- End custom fields -- */
 
+    /* -- Begin documents control -- */
     addId(i: number) {
         let id = 'cdk-drop-list-' + i
         if(!this.documentsIds.includes(id))
@@ -186,7 +207,9 @@ export class SplitterViewerComponent implements OnInit {
     deleteDocument(documentIndex: number) {
         this.documents = this.deleteItemFromList(this.documents, documentIndex);
     }
+    /* End documents control */
 
+    /* Begin tools bar */
     deleteItemFromList(list: any[], index: number){
         delete list[index];
         list = list.filter((x: any): x is any => x !== null);
@@ -265,4 +288,5 @@ export class SplitterViewerComponent implements OnInit {
           })
         ).subscribe()
     }
+    /* -- End tools bar -- */
 }
