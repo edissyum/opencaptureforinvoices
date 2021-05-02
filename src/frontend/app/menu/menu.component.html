@@ -78,7 +78,7 @@
                 </div>
                 <div class="ml-3 relative" *ngIf="this.getSplitterOrVerifier() != undefined && this.privilegesService.hasPrivilege('settings')">
                     <button id="settings-menu" aria-haspopup="true"
-                            mat-mini-fab routerLink="/settings/panel"
+                            mat-mini-fab routerLink="/settings"
                             [class.settings_active]="location.path().includes('settings')"
                             class="bg-green-400 hover:ring-4 hover:ring-offset-4 hover:ring-green-400 hover:ring-opacity-60">
                         <i class="fas fa-cog "></i>

@@ -17,7 +17,6 @@ import { SplitterListComponent } from "./splitter/list/list.component";
 import { VerifierViewerComponent } from './verifier/viewer/viewer.component';
 import { VerifierListComponent } from './verifier/list/list.component';
 import { UploadComponent } from "./upload/upload.component";
-import { PanelComponent } from "./settings/panel/panel.component";
 import { HasPrivilegeService } from "../services/has-privilege.service";
 
 const routes: Routes = [
@@ -72,15 +71,6 @@ const routes: Routes = [
         path: 'upload',
         component: UploadComponent,
         data: {title: marker('GLOBAL.upload'), privilege: 'upload'},
-        canActivate: [
-            LoginRequiredService,
-            HasPrivilegeService
-        ]
-    },
-    {
-        path: 'settings/panel',
-        component: PanelComponent,
-        data: {title: marker('GLOBAL.settings'), privilege: 'settings'},
         canActivate: [
             LoginRequiredService,
             HasPrivilegeService
